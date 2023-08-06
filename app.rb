@@ -17,10 +17,10 @@ erb(:umbrella)
 end
 
 get("/process_umbrella") do
-  @loc = params("user_loc")
+  @loc = params.fetch("user_loc")
+  @loc_url_version = @loc.gsub(" ","+")
   @gmaps_key = "AIzaSyDKz4Y3bvrTsWpPRNn9ab55OkmcwZxLOHI"
-  google_url = "https://maps.googleapis.com/maps/api/geocode/json?address=#{@loc}&key=#{@gmaps_key}"
-#  @loc = @loc.gsub("_"," ")
+  google_url = "https://maps.googleapis.com/maps/api/geocode/json?address=#{@loc_url_version}&key=#{@gmaps_key}"
   gmaps_data = HTTP.get(google_url)
   parsed_gmaps_data_hash = JSON.parse(gmaps_data)
   results_array = parsed_gmaps_data_hash.fetch("results")
@@ -31,30 +31,27 @@ get("/process_umbrella") do
   @lng = location.fetch("lng")
 
   @weather_key = "3RrQrvLmiUayQ84JSxL8D2aXw99yRKlx1N4qFDUE"
-  weather_url = "https://api.pirateweather.net/forecast/#{@weather_key}/#{lat},#{lng}"
+  weather_url = "https://api.pirateweather.net/forecast/#{@weather_key}/#{@lat},#{@lng}"
 
   weather_data = HTTP.get(weather_url)
   parsed_weather_data = JSON.parse(weather_data)
   @currently = parsed_weather_data.fetch("currently")
-  @current_temperature = currently.fetch("temperature")
-  hourly = parsed_weather_data.fetch("hourly")
-  next_hour_summary = hourly.fetch("summary")
-  hourly_data_array = hourly.fetch("data")
-  hourly_data_hash = hourly_data_array.at(0)
-  first_hourly_precip = hourly_data_hash.fetch("precipProbability")
-
+  @current_temperature = @currently.fetch("temperature")
+  @hourly = parsed_weather_data.fetch("hourly")
+  @next_hour_summary = @hourly.fetch("summary")
+  hourly_data_array = @hourly.fetch("data")
+  @hourly_data_hash = hourly_data_array.at(0)
+  @current_summary = @hourly_data_hash.fetch("summary")
+  @first_hourly_precip = @hourly_data_hash.fetch("precipProbability")
   twelvehour_data_hash = hourly_data_array[1..12]
 
 
-  #pp "The current temperature in #{@loc} is #{current_temperature} degrees Fahrenheit."
-  #pp "The forecast for the next hour in #{@loc} is #{next_hour_summary}."
-  #pp "The precipitation probability for the next hour in #{@loc} is #{(first_hourly_precip*100).round}%."
-
+ 
   yesrainy = false
   precipprob_array = []  
   preciptime_array = []
 
-  def umbrella_or_no
+
     twelvehour_data_hash.each do |hourly|
       precipprob = hourly.fetch("precipProbability")
       precipprob_array << precipprob  
@@ -74,11 +71,11 @@ get("/process_umbrella") do
 
 
     if yesrainy
-      pp "You might want an umbrella today!"
+      @outcome = "You might want to take an umbrella!"
     else
-      pp "You probably won't need an umbrella today."
+      @outcome = "You probably won't need an umbrella."
     end
-  end
+
 
   erb(:process_umbrella)
 end
