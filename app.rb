@@ -3,15 +3,14 @@ require "sinatra/reloader"
 require "http"
 require "json"
 require "dotenv"
-
+require "sinatra/cookies"
 
 get("/") do
-erb(:home)
+  erb(:home)
 end
 
-
 get("/umbrella") do
-erb(:umbrella)
+  erb(:umbrella)
 end
 
 post("/process_umbrella") do
@@ -75,5 +74,55 @@ post("/process_umbrella") do
     end
 
 
+    cookies["last_location"] = @loc
+    cookies["last_lat"] = @lat
+    cookies["last_lng"] = @lng
+
+
   erb(:process_umbrella)
+end
+
+get("/message") do
+  cookies["input"] = "user_msg"
+  erb(:message)
+end
+
+post("/process_single_msg") do
+  request_headers_hash = {
+  "Authorization" => "Bearer #{ENV.fetch("OPENAI_API_KEY")}",
+  "content-type" => "application/json"
+}
+
+request_body_hash = {
+  "model" => "gpt-3.5-turbo",
+  "messages" => [
+    {
+      "role" => "system",
+      "content" => "You are a helpful assistant who talks like Shakespeare."
+    },
+    {
+      "role" => "user",
+      "content" => "#{params.fetch("user.msg")}"
+    }
+  ]
+}
+
+request_body_json = JSON.generate(request_body_hash)
+
+raw_response = HTTP.headers(request_headers_hash).post(
+  "https://api.openai.com/v1/chat/completions",
+  :body => request_body_json
+).to_s
+
+parsed_response = JSON.parse(raw_response)
+
+  erb(:process_single_msg)
+end
+
+get("/ai_chat") do
+  erb(:ai_chat)
+end
+
+post("/addmsg_tochat") do
+  erb(:addmsg_tochat)
 end

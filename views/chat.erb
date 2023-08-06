@@ -1,0 +1,13 @@
+<!-- /views/chat.erb -->
+
+<p><form action="/addmsg_tochat" method="post">
+  <label for="chat_input">You:</label>
+  <input id="chat_input" type="text" name="user_chat_msg" palceholder="Enter a message...">
+  <button>Send</button>
+</form>
+
+<hr>
+
+<form action="/clear_chat" method="post">
+  <button>Clear chat history</button>
+</form>
