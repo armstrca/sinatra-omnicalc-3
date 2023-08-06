@@ -2,9 +2,11 @@ require "sinatra"
 require "sinatra/reloader"
 require "http"
 require "json"
+require "dotenv"
 
-@gmaps_key = ENV.fetch("GMAPS_KEY")
-@weather_key = ENV.fetch("PIRATE_WEATHER_KEY")
+
+@gmaps_key = "AIzaSyDKz4Y3bvrTsWpPRNn9ab55OkmcwZxLOHI"
+@weather_key = "3RrQrvLmiUayQ84JSxL8D2aXw99yRKlx1N4qFDUE"
 get("/") do
 erb(:home)
 end
@@ -15,21 +17,21 @@ erb(:umbrella)
 end
 
 get("/process_umbrella") do
-  @loc = params.fetch("user_loc")
-  gmaps_key = ENV.fetch("GMAPS_KEY")
-  google_url = "https://maps.googleapis.com/maps/api/geocode/json?address=#{@loc}&key=#{gmaps_key}"
-  @loc = @loc.gsub("_"," ")
+  @loc = params("user_loc")
+  @gmaps_key = "AIzaSyDKz4Y3bvrTsWpPRNn9ab55OkmcwZxLOHI"
+  google_url = "https://maps.googleapis.com/maps/api/geocode/json?address=#{@loc}&key=#{@gmaps_key}"
+#  @loc = @loc.gsub("_"," ")
   gmaps_data = HTTP.get(google_url)
-  parsed_gmaps_data = JSON.parse(gmaps_data)
-  results = parsed_gmaps_data.fetch("results")
-  results2 = results.fetch(0)
-  geometry = results2.fetch("geometry")
+  parsed_gmaps_data_hash = JSON.parse(gmaps_data)
+  results_array = parsed_gmaps_data_hash.fetch("results")
+  results2_hash = results_array.at(0)
+  geometry = results2_hash.fetch("geometry")
   location = geometry.fetch("location")
   @lat = location.fetch("lat")
   @lng = location.fetch("lng")
 
-  weather_key = ENV.fetch("PIRATE_WEATHER_KEY")
-  weather_url = "https://api.pirateweather.net/forecast/#{weather_key}/#{lat},#{lng}"
+  @weather_key = "3RrQrvLmiUayQ84JSxL8D2aXw99yRKlx1N4qFDUE"
+  weather_url = "https://api.pirateweather.net/forecast/#{@weather_key}/#{lat},#{lng}"
 
   weather_data = HTTP.get(weather_url)
   parsed_weather_data = JSON.parse(weather_data)
