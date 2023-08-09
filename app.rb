@@ -2,9 +2,7 @@ require "sinatra"
 require "sinatra/reloader"
 require "http"
 require "json"
-require "dotenv"
 require "sinatra/cookies"
-require "openai"
 
 OPENAI_API_KEY = ENV.fetch("OPENAI_API_KEY")
 
@@ -45,12 +43,9 @@ post("/process_umbrella") do
   @first_hourly_precip = @hourly_data_hash.fetch("precipProbability")
   twelvehour_data_hash = hourly_data_array[1..12]
 
-
- 
   yesrainy = false
   precipprob_array = []  
   preciptime_array = []
-
 
     twelvehour_data_hash.each do |hourly|
       precipprob = hourly.fetch("precipProbability")
@@ -69,19 +64,15 @@ post("/process_umbrella") do
       end
     end
 
-
     if yesrainy
       @outcome = "You might want to take an umbrella!"
     else
       @outcome = "You probably won't need an umbrella."
     end
 
-
     cookies["last_location"] = @loc
     cookies["last_lat"] = @lat
     cookies["last_lng"] = @lng
-
-
   erb(:process_umbrella)
 end
 
