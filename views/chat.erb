@@ -1,20 +1,21 @@
 <!-- /views/chat.erb -->
+<!-- This conditional prevents a nilClass error from occuring if the @chat_history cookie array is empty-->
 <% if @chat_history != nil %>
+<!-- Loops through each hash in the @chat_history array-->
   <% @chat_history.each do |chat| %>
+<!-- Sequentially labels, prints and maintains each user input from each hash in the @chat_history cookie array -->
     <% if chat["role"] == "user"  %>
       <dt>You:</dt>
       <dd><%= chat["content"]  %></dd>
     <% end %>
-
+<!-- Sequentially labels, prints and maintains each ChatGPT response from each hash in the @chat_history cookie array. Also formats for intended line breaks. -->
     <% if chat["role"] == "assistant"  %>
       <dt>Assistant:</dt>
       <dd><%= chat["content"].gsub("\n", "<br>") %></dd>
     <% end %>
-
-    <br>
   <% end %>
 <% end %>
-
+<!-- Fairly self-explanatory user input form -->
 <p><form action="/chat" method="post">
   <label for="chat_input">You:</label>
   <input id="chat_input" type="text" name="user_chat_msg" placeholder="Enter a message...">
@@ -22,7 +23,9 @@
 </form>
 
 <hr>
-
+<!-- This button navigates to the clear_chat.erb, which simply resets the @chat_history cookie array to [] (that would be nil, correct?) and redirects back to the chat.erb -->
 <form action="/clear_chat" method="post">
   <button>Clear chat history</button>
 </form>
+
+<!-- Violas! -->
