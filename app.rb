@@ -8,7 +8,6 @@ require "openai"
 
 OPENAI_API_KEY = ENV.fetch("OPENAI_API_KEY")
 
-
 get("/") do
   erb(:home)
 end
@@ -87,7 +86,6 @@ post("/process_umbrella") do
 end
 
 get("/message") do
-
   erb(:message)
 end
 
@@ -128,13 +126,11 @@ erb(:msg_response)
 end
 
 get("/chat") do
-
   erb(:chat)
 end
 
 post("/clear_chat") do
   cookies[:chat_history] = JSON.generate([])
-
   redirect to("/chat")
 end
 
@@ -159,7 +155,6 @@ post("/chat") do
     }
   ]
 
-  # Add previous chat history messages to the request_messages array
   @chat_history.each do |message|
     request_messages << {
       "role" => message["role"],
@@ -181,10 +176,9 @@ post("/chat") do
 
   @parsed_response = JSON.parse(raw_response)
 
-  pp @reply = @parsed_response.dig("choices", 0, "message", "content")
+  @reply = @parsed_response.dig("choices", 0, "message", "content")
 
-  # Update the chat history with AI's reply
-  pp @chat_history << { "role" => "assistant", "content" => @reply }
+  @chat_history << { "role" => "assistant", "content" => @reply }
 
   cookies[:chat_history] = JSON.generate(@chat_history)
   erb(:chat)

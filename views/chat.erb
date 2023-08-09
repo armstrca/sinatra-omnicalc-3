@@ -8,7 +8,7 @@
 
     <% if chat["role"] == "assistant"  %>
       <dt>Assistant:</dt>
-      <dd><%= chat["content"] %></dd>
+      <dd><%= chat["content"].gsub("\n", "<br>") %></dd>
     <% end %>
 
     <br>
