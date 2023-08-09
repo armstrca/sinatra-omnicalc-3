@@ -1,6 +1,10 @@
 <!-- /views/chat.erb -->
+<p>Your message:</p>
+<p> <%="#{params.fetch("user_chat_msg")}"%>   </p>
+<p>GPT-4's response:<p>
+<p> <%=  @formatted_reply  %>   </p>
 
-<p><form action="/addmsg_tochat" method="post">
+<p><form action="/chat" method="post">
   <label for="chat_input">You:</label>
   <input id="chat_input" type="text" name="user_chat_msg" palceholder="Enter a message...">
   <button>Send</button>

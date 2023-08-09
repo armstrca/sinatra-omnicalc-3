@@ -6,6 +6,9 @@ ruby "3.2.1"
 gem "sinatra"
 gem "sinatra-contrib"
 gem "dotenv"
+gem "http"
+gem "openai"
+gem 'rack_session_access'
 
 # Use Puma as the app server
 gem "puma", "~> 5.0"

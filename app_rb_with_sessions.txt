@@ -5,6 +5,9 @@ require "json"
 require "dotenv"
 require "sinatra/cookies"
 require "openai"
+enable :sessions
+
+
 
 OPENAI_API_KEY = ENV.fetch("OPENAI_API_KEY")
 
@@ -128,48 +131,34 @@ erb(:msg_response)
 end
 
 get("/chat") do
-
+  @chat_history = session[:chat_history] || []
   erb(:chat)
 end
 
 post("/clear_chat") do
-  cookies[:chat_history] = JSON.generate([])
+  session[:chat_history] = []
 
   redirect to("/chat")
 end
 
 post("/chat") do
-  @chat_history = JSON.parse(cookies[:chat_history] || "[]")
-  @current_message = params.fetch("user_chat_msg")
-  @chat_history << { "role" => "user", "content" => @current_message }
+  current_message = params.fetch("user_chat_msg")
+  @chat_history = session[:chat_history] || []
+  @chat_history << { "role" => "user", "content" => current_message }
 
   request_headers_hash = {
     "Authorization" => "Bearer #{ENV.fetch("OPENAI_API_KEY")}",
     "content-type" => "application/json"
   }
 
-  request_messages = [
-    {
-      "role" => "system",
-      "content" => "You are a helpful assistant."
-    },
-    {
-      "role" => "user",
-      "content" => @current_message
-    }
-  ]
-
-  # Add previous chat history messages to the request_messages array
-  @chat_history.each do |message|
-    request_messages << {
-      "role" => message["role"],
-      "content" => message["content"]
-    }
-  end
-
   request_body_hash = {
     "model" => "gpt-3.5-turbo",
-    "messages" => request_messages
+    "messages" => [
+      {
+        "role" => "system",
+        "content" => "You are a helpful assistant who talks like Shakespeare."
+      }
+    ] + @chat_history
   }
 
   request_body_json = JSON.generate(request_body_hash)
@@ -180,12 +169,10 @@ post("/chat") do
   ).to_s
 
   @parsed_response = JSON.parse(raw_response)
+  @reply = @parsed_response.dig("choices", 0, "message", "content")
 
-  pp @reply = @parsed_response.dig("choices", 0, "message", "content")
+  @chat_history << { "role" => "assistant", "content" => @reply.gsub("\n", "<br>") }
+  session[:chat_history] = @chat_history
 
-  # Update the chat history with AI's reply
-  pp @chat_history << { "role" => "assistant", "content" => @reply }
-
-  cookies[:chat_history] = JSON.generate(@chat_history)
   erb(:chat)
 end

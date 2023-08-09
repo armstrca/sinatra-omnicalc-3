@@ -1,8 +1,23 @@
 <!-- /views/chat.erb -->
+<% if @chat_history != nil %>
+  <% @chat_history.each do |chat| %>
+    <% if chat["role"] == "user"  %>
+      <dt>You:</dt>
+      <dd><%= chat["content"]  %></dd>
+    <% end %>
 
-<p><form action="/addmsg_tochat" method="post">
+    <% if chat["role"] == "assistant"  %>
+      <dt>Assistant:</dt>
+      <dd><%= chat["content"] %></dd>
+    <% end %>
+
+    <br>
+  <% end %>
+<% end %>
+
+<p><form action="/chat" method="post">
   <label for="chat_input">You:</label>
-  <input id="chat_input" type="text" name="user_chat_msg" palceholder="Enter a message...">
+  <input id="chat_input" type="text" name="user_chat_msg" placeholder="Enter a message...">
   <button>Send</button>
 </form>
 
