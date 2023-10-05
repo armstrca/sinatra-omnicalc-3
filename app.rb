@@ -40,7 +40,7 @@ post("/process_umbrella") do
   hourly_data_array = @hourly.fetch("data")
   @hourly_data_hash = hourly_data_array.at(0)
   @current_summary = @hourly_data_hash.fetch("summary")
-  @first_hourly_precip = @hourly_data_hash.fetch("precipProbability")
+  @first_hourly_precip = @hourly_data_hash.fetch("precipprobability")
   twelvehour_data_hash = hourly_data_array[1..12]
 
   yesrainy = false
@@ -48,7 +48,7 @@ post("/process_umbrella") do
   preciptime_array = []
 
     twelvehour_data_hash.each do |hourly|
-      precipprob = hourly.fetch("precipProbability")
+      precipprob = hourly.fetch("precipprobability")
       precipprob_array << precipprob  
 
       if precipprob > 0.1
@@ -113,7 +113,7 @@ post("/msg_response") do
   @formatted_reply = @reply.gsub("\n", "<br>")
   cookies["input"] = params.fetch("user_msg")
 
-erb(:msg_response)
+  erb(:msg_response)
 end
 
 get("/chat") do
@@ -128,51 +128,56 @@ end
 post("/chat") do
   
   # create a cookie array that includes the entirety of user messages and OpenAI replies
-  @chat_history = JSON.parse(cookies[:chat_history] || "[]")
-
+pp "0000000000000000000000000000000000000"
+pp  @chat_history = JSON.parse(cookies[:chat_history] || "[]")
+pp "1111111111111111111111111111111111111"
   # self-explanatory
-  @current_message = params.fetch("user_chat_msg")
-
+pp  @current_message = params.fetch("user_chat_msg")
+pp "2222222222222222222222222222222222222222222222"
   # add a hash describing the user's most recent input
-  @chat_history << { "role" => "user", "content" => @current_message }
-
+pp  @chat_history << { "role" => "user", "content" => @current_message }
+pp "3333333333333333333333333333333333333333333333333"
 # send a hash that includes the API key and specifies that it should be received as a JSON string
-  request_headers_hash = {
+pp  request_headers_hash = {
     "Authorization" => "Bearer #{ENV.fetch("OPENAI_API_KEY")}",
     "content-type" => "application/json"
   }
 
-# an array of two hashes. The first "silently" tells ChatGPT what its behavior is without the user having to specify directly. Unclear if "system" is a required term for ChatGPT to understand or what. The second specifies what the user's most recent input is.
- request_messages = [
+pp "44444444444444444444444444444444444444444444444444"
+# an array of two hashes. The first "silently" tells ChatGPT what its behavior is without the user having to specify directly. 
+#Unclear if "system" is a required term for ChatGPT to understand or what. The second specifies what the user's most recent input is.
+pp request_messages = [
     {
       "role" => "system",
-      "content" => "You are a helpful assistant."
+      "content" => "You can only respond in Russian in the form of cyrillic text."
     },
     {
       "role" => "user",
       "content" => @current_message
     }
   ]
-
 # a loop that appends each subsequent set of hashes from the @chat_history array to the end of the request_messages array
-  @chat_history.each do |message|
+@chat_history.each do |message|
     request_messages << {
       "role" => message["role"],
       "content" => message["content"]
     }
   end
-
-# a hash that specifies what model of ChatGPT should be initialized on the OpenAI end and transmits the request_messages hash "silently." Doing it this way because it allows for separating the @current_message variable from the entirety of the @chat_history variable, which ensures that the OpenAI server "remembers" all cookie inputs but only directly responds to @current_message. Without this, each ChatGPT reply would include responses to every single user message in the @chat_history array.
-  request_body_hash = {
+pp "666666666666666666666666666666666666666666666666666"
+# a hash that specifies what model of ChatGPT should be initialized on the OpenAI end and transmits the request_messages hash "silently." 
+# Doing it this way because it allows for separating the @current_message variable from the entirety of the @chat_history variable, 
+# which ensures that the OpenAI server "remembers" all cookie inputs but only directly responds to @current_message. 
+# Without this, each ChatGPT reply would include responses to every single user message in the @chat_history array.
+pp  request_body_hash = {
     "model" => "gpt-3.5-turbo",
     "messages" => request_messages
   }
 
 # turns request_body_hash into a JSON string
-  request_body_json = JSON.generate(request_body_hash)
+  pp request_body_json = JSON.generate(request_body_hash)
 
 # shows the most recent raw response from ChatGPT in URL format as a string
-  raw_response = HTTP.headers(request_headers_hash).post(
+  pp raw_response = HTTP.headers(request_headers_hash).post(
     "https://api.openai.com/v1/chat/completions",
     :body => request_body_json
   ).to_s
